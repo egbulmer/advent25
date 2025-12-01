@@ -1,25 +1,42 @@
 (ns day1
-  (:require [clojure.test :refer [deftest is run-tests]]
+  (:require [clojure.test :as test :refer [deftest is run-tests]]
             [clojure.java.io :as io]
             [nextjournal.clerk :as clerk]
-            [util :refer [solve]]))
+            [util :as util :refer [solve]]))
+
+(defn rotate-dial
+  "Rotate dial n clicks. L = negative, R = positive."
+  [dial n]
+  (let [x (+ dial (mod n 100))]
+    (cond
+      (> x 99) (- x 100)
+      (< x  0) (+ x 100)
+      :else    x)))
+
+(defn parse-instruction
+  "Parse instruction of the format '(L|R)X' into a positive or negative step count."
+  [s]
+  (let [dir (first s)
+        n   (parse-long (subs s 1))]
+    (case dir
+      \L (* -1 n)
+      \R n)))
 
 (defn day1a [in]
-  ;;; TODO - Solve day 1 part 1 here.
-  nil)
+  (loop [instructions (map parse-instruction (line-seq in))
+         dial         50
+         result       0]
+    (if-let [n (first instructions)]
+      (let [new-dial  (rotate-dial dial n)]
+        (recur (rest instructions)
+               new-dial
+               (if (= new-dial 0) (inc result) result)))
+      result)))
 
 (defn day1b [in]
   ;;; TODO - Solve day 1 part 2 here.
   nil)
 
-(deftest day1a-example
-  (is (= 42 (solve day1a "day1-example.txt"))))
-
-(deftest day1a-real
-  (is (= 42 (solve day1a "day1-input.txt"))))
-
-(deftest day1b-example
-  (is (= 42 (solve day1b "day1-example.txt"))))
-
-(deftest day1b-real
-  (is (= 42 (solve day1b "day1-input.txt"))))
+(deftest test-day1
+  (is (= (solve day1a "day1-example.txt") 3))
+  (is (= (solve day1a "day1-input.txt") 1172)))
